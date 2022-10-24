@@ -14,7 +14,7 @@ pub trait SamplingPortSourceExt {
 }
 
 pub trait SamplingPortDestinationExt<const MSG_SIZE: MessageSize> {
-    fn recv_type<T>(&self) -> Result<T, SamplingRecvError<MSG_SIZE>>
+    fn recv_type<T>(&self) -> Result<(Validity, T), SamplingRecvError<MSG_SIZE>>
     where
         T: for<'a> Deserialize<'a>,
         [u8; MSG_SIZE as usize]:;
@@ -41,7 +41,7 @@ impl<const MSG_SIZE: MessageSize, Q: ApexSamplingPortP4> SamplingPortDestination
 where
     [u8; MSG_SIZE as usize]:,
 {
-    fn recv_type<T>(&self) -> Result<T, SamplingRecvError<MSG_SIZE>>
+    fn recv_type<T>(&self) -> Result<(Validity, T), SamplingRecvError<MSG_SIZE>>
     where
         T: for<'a> Deserialize<'a>,
     {
@@ -50,7 +50,7 @@ where
         let msg_slice = DeSlice::new(msg);
         let mut deserializer = postcard::Deserializer::from_flavor(msg_slice);
         match T::deserialize(&mut deserializer) {
-            Ok(t) => Ok(t),
+            Ok(t) => Ok((val, t)),
             Err(e) => {
                 let mut msg = ArrayVec::from(msg_buf);
                 msg.truncate(msg.len());

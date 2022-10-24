@@ -1,6 +1,7 @@
 use apex_rs::bindings::*;
 use arrayvec::ArrayVec;
 
+#[derive(Debug, Clone)]
 pub enum QueuingRecvError<const MSG_SIZE: MessageSize>
 where
     [u8; MSG_SIZE as usize]:,
@@ -18,6 +19,7 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum SamplingRecvError<const MSG_SIZE: MessageSize>
 where
     [u8; MSG_SIZE as usize]:,

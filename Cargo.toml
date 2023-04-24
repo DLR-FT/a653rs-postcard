@@ -1,5 +1,5 @@
 [package]
-name = "apex-rs-postcard"
+name = "a653rs-postcard"
 version = "0.1.0"
 edition = "2021"
 authors = ["Sven Friedrich <sven.friedrich@dlr.de>"]
@@ -12,4 +12,4 @@ serde = { version = "1.0", features = ["derive"], default-features = false }
 postcard = { version = "1.0", default-features = false }
 arrayvec = { version = "0.7", default-features = false }
 
-apex-rs = { git = "https://github.com/aeronautical-informatics/apex-rs.git", branch = "main" }
+a653rs = "0.2"

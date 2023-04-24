@@ -1,5 +1,5 @@
-use apex_rs::bindings::*;
-use apex_rs::prelude::*;
+use a653rs::bindings::*;
+use a653rs::prelude::*;
 use arrayvec::ArrayVec;
 use postcard::de_flavors::Slice as DeSlice;
 use postcard::ser_flavors::Slice as SerSlice;

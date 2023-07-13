@@ -1,6 +1,6 @@
 [package]
 name = "a653rs-postcard"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Sven Friedrich <sven.friedrich@dlr.de>"]
 license = "MIT OR Apache-2.0"
@@ -12,4 +12,4 @@ serde = { version = "1.0", features = ["derive"], default-features = false }
 postcard = { version = "1.0", default-features = false }
 arrayvec = { version = "0.7", default-features = false }
 
-a653rs = "0.2"
+a653rs = "0.3"

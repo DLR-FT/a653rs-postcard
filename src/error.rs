@@ -41,6 +41,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub enum SendError {
     Apex(a653rs::prelude::Error),
     Postcard(postcard::Error),

@@ -1,4 +1,4 @@
-use a653rs::bindings::*;
+use a653rs::prelude::*;
 use arrayvec::ArrayVec;
 
 #[derive(Debug, Clone)]

@@ -1,4 +1,3 @@
-use a653rs::bindings::*;
 use a653rs::prelude::*;
 use arrayvec::ArrayVec;
 use postcard::de_flavors::Slice as DeSlice;
@@ -20,7 +19,7 @@ pub trait QueuingPortReceiverExt<const MSG_SIZE: MessageSize> {
         [u8; MSG_SIZE as usize]:;
 }
 
-impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPortP4>
+impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPortP4Ext>
     QueuingPortSenderExt for QueuingPortSender<MSG_SIZE, NB_MSGS, Q>
 where
     [u8; MSG_SIZE as usize]:,
@@ -36,7 +35,7 @@ where
     }
 }
 
-impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPortP4>
+impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPortP4Ext>
     QueuingPortReceiverExt<MSG_SIZE> for QueuingPortReceiver<MSG_SIZE, NB_MSGS, Q>
 where
     [u8; MSG_SIZE as usize]:,

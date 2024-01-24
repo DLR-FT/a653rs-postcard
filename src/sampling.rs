@@ -1,4 +1,3 @@
-use a653rs::bindings::*;
 use a653rs::prelude::*;
 use arrayvec::ArrayVec;
 use postcard::de_flavors::Slice as DeSlice;
@@ -20,7 +19,7 @@ pub trait SamplingPortDestinationExt<const MSG_SIZE: MessageSize> {
         [u8; MSG_SIZE as usize]:;
 }
 
-impl<const MSG_SIZE: MessageSize, Q: ApexSamplingPortP4> SamplingPortSourceExt
+impl<const MSG_SIZE: MessageSize, Q: ApexSamplingPortP4Ext> SamplingPortSourceExt
     for SamplingPortSource<MSG_SIZE, Q>
 where
     [u8; MSG_SIZE as usize]:,
@@ -36,7 +35,7 @@ where
     }
 }
 
-impl<const MSG_SIZE: MessageSize, Q: ApexSamplingPortP4> SamplingPortDestinationExt<MSG_SIZE>
+impl<const MSG_SIZE: MessageSize, Q: ApexSamplingPortP4Ext> SamplingPortDestinationExt<MSG_SIZE>
     for SamplingPortDestination<MSG_SIZE, Q>
 where
     [u8; MSG_SIZE as usize]:,

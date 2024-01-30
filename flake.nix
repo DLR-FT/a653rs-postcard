@@ -12,7 +12,7 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [ devshell.overlay ];
+            overlays = [ devshell.overlays.default ];
           };
           rust-toolchain = with fenix.packages.${system};
             combine [

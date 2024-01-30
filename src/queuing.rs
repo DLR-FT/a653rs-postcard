@@ -13,7 +13,10 @@ pub trait QueuingPortSenderExt {
 }
 
 pub trait QueuingPortReceiverExt<const MSG_SIZE: MessageSize> {
-    fn recv_type<T>(&self, timeout: SystemTime) -> Result<T, QueuingRecvError<MSG_SIZE>>
+    fn recv_type<T>(
+        &self,
+        timeout: SystemTime,
+    ) -> Result<(T, QueueOverflow), QueuingRecvError<MSG_SIZE>>
     where
         T: for<'a> Deserialize<'a>,
         [u8; MSG_SIZE as usize]:;
@@ -40,16 +43,19 @@ impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPor
 where
     [u8; MSG_SIZE as usize]:,
 {
-    fn recv_type<T>(&self, timeout: SystemTime) -> Result<T, QueuingRecvError<MSG_SIZE>>
+    fn recv_type<T>(
+        &self,
+        timeout: SystemTime,
+    ) -> Result<(T, QueueOverflow), QueuingRecvError<MSG_SIZE>>
     where
         T: for<'a> Deserialize<'a>,
     {
         let mut msg_buf = [0u8; MSG_SIZE as usize];
-        let msg = self.receive(&mut msg_buf, timeout)?;
+        let (msg, overflow) = self.receive(&mut msg_buf, timeout)?;
         let msg_slice = DeSlice::new(msg);
         let mut deserializer = postcard::Deserializer::from_flavor(msg_slice);
         match T::deserialize(&mut deserializer) {
-            Ok(t) => Ok(t),
+            Ok(t) => Ok((t, overflow)),
             Err(e) => {
                 let mut msg = ArrayVec::from(msg_buf);
                 msg.truncate(msg.len());

@@ -45,7 +45,7 @@ where
         T: for<'a> Deserialize<'a>,
     {
         let mut msg_buf = [0u8; MSG_SIZE as usize];
-        let msg = self.receive(&mut msg_buf, timeout)?;
+        let (msg, _overflow) = self.receive(&mut msg_buf, timeout)?;
         let msg_slice = DeSlice::new(msg);
         let mut deserializer = postcard::Deserializer::from_flavor(msg_slice);
         match T::deserialize(&mut deserializer) {

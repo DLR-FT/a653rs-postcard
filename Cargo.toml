@@ -7,8 +7,18 @@ license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+alloc = ["postcard/alloc"]
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"], default-features = false }
 postcard = { version = "1.0", default-features = false }
 
 a653rs = "0.6"
+
+[package.metadata.cargo-all-features]
+skip_optional_dependencies = true
+
+[package.metadata."docs.rs"]
+all-features = true

@@ -27,6 +27,7 @@ jobs:
         command:
           - verify-no_std
           - verify-doc
+          - verify-features
     steps:
       - uses: actions/checkout@v2
       - name: Install Nix

@@ -1,4 +1,24 @@
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 use a653rs::prelude::*;
+
+#[cfg(feature = "alloc")]
+#[derive(Debug, Clone)]
+pub enum QueuingRecvError {
+    Apex(a653rs::prelude::Error),
+    Postcard(postcard::Error, Vec<u8>),
+}
+
+#[cfg(feature = "alloc")]
+impl From<a653rs::prelude::Error> for QueuingRecvError {
+    fn from(e: a653rs::prelude::Error) -> Self {
+        QueuingRecvError::Apex(e)
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum QueuingRecvBufError<'a> {
@@ -9,6 +29,20 @@ pub enum QueuingRecvBufError<'a> {
 impl From<a653rs::prelude::Error> for QueuingRecvBufError<'_> {
     fn from(e: a653rs::prelude::Error) -> Self {
         QueuingRecvBufError::Apex(e)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[derive(Debug, Clone)]
+pub enum SamplingRecvError {
+    Apex(a653rs::prelude::Error),
+    Postcard(postcard::Error, Validity, Vec<u8>),
+}
+
+#[cfg(feature = "alloc")]
+impl From<a653rs::prelude::Error> for SamplingRecvError {
+    fn from(e: a653rs::prelude::Error) -> Self {
+        SamplingRecvError::Apex(e)
     }
 }
 

@@ -1,43 +1,26 @@
 use a653rs::prelude::*;
-use arrayvec::ArrayVec;
 
 #[derive(Debug, Clone)]
-pub enum QueuingRecvError<const MSG_SIZE: MessageSize>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+pub enum QueuingRecvBufError<'a> {
     Apex(a653rs::prelude::Error),
-    Postcard(postcard::Error, ArrayVec<u8, { MSG_SIZE as usize }>),
+    Postcard(postcard::Error, &'a [u8]),
 }
 
-impl<const MSG_SIZE: MessageSize> From<a653rs::prelude::Error> for QueuingRecvError<MSG_SIZE>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+impl From<a653rs::prelude::Error> for QueuingRecvBufError<'_> {
     fn from(e: a653rs::prelude::Error) -> Self {
-        QueuingRecvError::Apex(e)
+        QueuingRecvBufError::Apex(e)
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum SamplingRecvError<const MSG_SIZE: MessageSize>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+pub enum SamplingRecvBufError<'a> {
     Apex(a653rs::prelude::Error),
-    Postcard(
-        postcard::Error,
-        Validity,
-        ArrayVec<u8, { MSG_SIZE as usize }>,
-    ),
+    Postcard(postcard::Error, Validity, &'a [u8]),
 }
 
-impl<const MSG_SIZE: MessageSize> From<a653rs::prelude::Error> for SamplingRecvError<MSG_SIZE>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+impl From<a653rs::prelude::Error> for SamplingRecvBufError<'_> {
     fn from(e: a653rs::prelude::Error) -> Self {
-        SamplingRecvError::Apex(e)
+        SamplingRecvBufError::Apex(e)
     }
 }
 

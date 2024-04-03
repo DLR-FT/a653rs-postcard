@@ -1,5 +1,4 @@
 use a653rs::prelude::*;
-use arrayvec::ArrayVec;
 use postcard::de_flavors::Slice as DeSlice;
 use postcard::ser_flavors::Slice as SerSlice;
 use serde::{Deserialize, Serialize};
@@ -7,60 +6,47 @@ use serde::{Deserialize, Serialize};
 use crate::error::*;
 
 pub trait QueuingPortSenderExt {
-    fn send_type<T>(&self, p: T, timeout: SystemTime) -> Result<(), SendError>
+    fn send_type_buf<T>(&self, p: T, timeout: SystemTime, buf: &mut [u8]) -> Result<(), SendError>
     where
         T: Serialize;
 }
 
-pub trait QueuingPortReceiverExt<const MSG_SIZE: MessageSize> {
-    fn recv_type<T>(
-        &self,
+pub trait QueuingPortReceiverExt {
+    fn recv_type_buf<'a, T>(
+        &'a self,
         timeout: SystemTime,
-    ) -> Result<(T, QueueOverflow), QueuingRecvError<MSG_SIZE>>
+        buf: &'a mut [u8],
+    ) -> Result<(T, QueueOverflow), QueuingRecvBufError<'a>>
     where
-        T: for<'a> Deserialize<'a>,
-        [u8; MSG_SIZE as usize]:;
+        T: for<'b> Deserialize<'b>;
 }
 
-impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPortP4Ext>
-    QueuingPortSenderExt for QueuingPortSender<MSG_SIZE, NB_MSGS, Q>
-where
-    [u8; MSG_SIZE as usize]:,
-{
-    fn send_type<T>(&self, p: T, timeout: SystemTime) -> Result<(), SendError>
+impl<Q: ApexQueuingPortP4Ext> QueuingPortSenderExt for QueuingPortSender<Q> {
+    fn send_type_buf<T>(&self, p: T, timeout: SystemTime, buf: &mut [u8]) -> Result<(), SendError>
     where
         T: Serialize,
     {
-        let buf = &mut [0u8; MSG_SIZE as usize];
         let buf =
             postcard::serialize_with_flavor::<T, SerSlice, &mut [u8]>(&p, SerSlice::new(buf))?;
         self.send(buf, timeout).map_err(SendError::from)
     }
 }
 
-impl<const MSG_SIZE: MessageSize, const NB_MSGS: MessageRange, Q: ApexQueuingPortP4Ext>
-    QueuingPortReceiverExt<MSG_SIZE> for QueuingPortReceiver<MSG_SIZE, NB_MSGS, Q>
-where
-    [u8; MSG_SIZE as usize]:,
-{
-    fn recv_type<T>(
+impl<Q: ApexQueuingPortP4Ext> QueuingPortReceiverExt for QueuingPortReceiver<Q> {
+    fn recv_type_buf<'a, T>(
         &self,
         timeout: SystemTime,
-    ) -> Result<(T, QueueOverflow), QueuingRecvError<MSG_SIZE>>
+        buf: &'a mut [u8],
+    ) -> Result<(T, QueueOverflow), QueuingRecvBufError<'a>>
     where
-        T: for<'a> Deserialize<'a>,
+        T: for<'b> Deserialize<'b>,
     {
-        let mut msg_buf = [0u8; MSG_SIZE as usize];
-        let (msg, overflow) = self.receive(&mut msg_buf, timeout)?;
+        let (msg, overflow) = self.receive(buf, timeout)?;
         let msg_slice = DeSlice::new(msg);
         let mut deserializer = postcard::Deserializer::from_flavor(msg_slice);
         match T::deserialize(&mut deserializer) {
             Ok(t) => Ok((t, overflow)),
-            Err(e) => {
-                let mut msg = ArrayVec::from(msg_buf);
-                msg.truncate(msg.len());
-                Err(QueuingRecvError::Postcard(e, msg))
-            }
+            Err(e) => Err(QueuingRecvBufError::Postcard(e, msg)),
         }
     }
 }

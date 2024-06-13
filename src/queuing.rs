@@ -1,3 +1,5 @@
+//! Queuing port extension traits
+
 #[cfg(feature = "alloc")]
 use alloc::vec;
 
@@ -11,23 +13,119 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::*;
 
+/// Postcard extension trait for queuing port sender
 pub trait QueuingPortSenderExt {
+    /// Send a type using an a653rs [`QueuingPortSender`]
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let port = ctx
+    /// #     .create_queuing_port_sender(Name::from_str("").unwrap(), 500, 10, QueuingDiscipline::Fifo)
+    /// #     .unwrap();
+    ///
+    /// let port: QueuingPortSender<Hypervisor> = port;
+    /// port.send_type(String::from("Typed Data"), SystemTime::Infinite).unwrap();
+    /// # })
+    /// ```
     #[cfg(feature = "alloc")]
     fn send_type<T>(&self, p: T, timeout: SystemTime) -> Result<(), SendError>
     where
         T: Serialize;
 
+    /// Send a type using an a653rs [`QueuingPortSender`]
+    ///
+    /// Requires a buffer `buf` for serialization.
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let port = ctx
+    /// #     .create_queuing_port_sender(Name::from_str("").unwrap(), 500, 10, QueuingDiscipline::Fifo)
+    /// #     .unwrap();
+    ///
+    /// let port: QueuingPortSender<Hypervisor> = port;
+    /// let mut buf = [0; 500];
+    /// port.send_type_buf(String::from("Typed Data"), SystemTime::Infinite, &mut buf).unwrap();
+    /// # })
+    /// ```
     fn send_type_buf<T>(&self, p: T, timeout: SystemTime, buf: &mut [u8]) -> Result<(), SendError>
     where
         T: Serialize;
 }
 
+/// Postcard extension trait for queuing ports receiver
 pub trait QueuingPortReceiverExt {
+    /// Receive a type using an a653rs [`QueuingPortReceiver`]
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let src_port = ctx
+    /// #     .create_queuing_port_sender(Name::from_str("").unwrap(), 500, 10, QueuingDiscipline::Fifo)
+    /// #     .unwrap();
+    /// # let port = ctx
+    /// #     .create_queuing_port_receiver(Name::from_str("").unwrap(), 500, 10, QueuingDiscipline::Fifo)
+    /// #     .unwrap();
+    ///
+    /// let port: QueuingPortReceiver<Hypervisor> = port;
+    /// # src_port.send_type(String::default(), SystemTime::Infinite).unwrap();
+    /// port.recv_type::<String>(SystemTime::Infinite).unwrap();
+    /// # })
+    /// ```
     #[cfg(feature = "alloc")]
     fn recv_type<T>(&self, timeout: SystemTime) -> Result<(T, QueueOverflow), QueuingRecvError>
     where
         T: for<'a> Deserialize<'a>;
 
+    /// Receive a type using an a653rs [`QueuingPortReceiver`]
+    ///
+    /// Requires a buffer `buf` for receiving and deserializing the data.
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let src_port = ctx
+    /// #     .create_queuing_port_sender(Name::from_str("").unwrap(), 500, 10, QueuingDiscipline::Fifo)
+    /// #     .unwrap();
+    /// # let port = ctx
+    /// #     .create_queuing_port_receiver(Name::from_str("").unwrap(), 500, 10, QueuingDiscipline::Fifo)
+    /// #     .unwrap();
+    ///
+    /// let port: QueuingPortReceiver<Hypervisor> = port;
+    /// let mut buf = [0; 500];
+    /// # src_port.send_type_buf(String::default(), SystemTime::Infinite, &mut buf).unwrap();
+    /// port.recv_type_buf::<String>(SystemTime::Infinite, &mut buf).unwrap();
+    /// # })
+    /// ```
     fn recv_type_buf<'a, T>(
         &'a self,
         timeout: SystemTime,

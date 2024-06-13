@@ -1,3 +1,5 @@
+//! Sampling port extension traits
+
 #[cfg(feature = "alloc")]
 use alloc::vec;
 
@@ -11,23 +13,119 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::*;
 
+/// Postcard extension trait for sampling port sources
 pub trait SamplingPortSourceExt {
+    // Send a type using an a653rs [`SamplingPortSource`]
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let port = ctx
+    /// #     .create_sampling_port_source(Name::from_str("").unwrap(), 500)
+    /// #     .unwrap();
+    ///
+    /// let port: SamplingPortSource<Hypervisor> = port;
+    /// port.send_type(String::from("Typed Data")).unwrap();
+    /// # })
+    /// ```
     #[cfg(feature = "alloc")]
     fn send_type<T>(&self, p: T) -> Result<(), SendError>
     where
         T: Serialize;
 
+    // Send a type using an a653rs [`SamplingPortSource`]
+    ///
+    /// Requires a buffer `buf` for serialization.
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let port = ctx
+    /// #     .create_sampling_port_source(Name::from_str("").unwrap(), 500)
+    /// #     .unwrap();
+    ///
+    /// let port: SamplingPortSource<Hypervisor> = port;
+    /// let mut buf = [0; 500];
+    /// port.send_type_buf(String::from("Typed Data"), &mut buf).unwrap();
+    /// # })
+    /// ```
     fn send_type_buf<T>(&self, p: T, buf: &mut [u8]) -> Result<(), SendError>
     where
         T: Serialize;
 }
 
+/// Postcard extension trait for sampling port destinations
 pub trait SamplingPortDestinationExt {
+    /// Receive a type using an a653rs [`SamplingPortDestination`]
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let src_port = ctx
+    /// #     .create_sampling_port_source(Name::from_str("").unwrap(), 500)
+    /// #     .unwrap();
+    /// # let port = ctx
+    /// #     .create_sampling_port_destination(Name::from_str("Port").unwrap(), 500, Duration::ZERO)
+    /// #     .unwrap();
+    ///
+    /// let port: SamplingPortDestination<Hypervisor> = port;
+    /// # src_port.send_type(String::default()).unwrap();
+    /// let (validity, received_type) = port.recv_type::<String>().unwrap();
+    /// # })
+    /// ```
     #[cfg(feature = "alloc")]
     fn recv_type<T>(&self) -> Result<(Validity, T), SamplingRecvError>
     where
         T: for<'a> Deserialize<'a>;
 
+    /// Receive a type using an a653rs [`SamplingPortDestination`]
+    ///
+    /// Requires a buffer `buf` for receiving and deserializing the data.
+    ///
+    /// # Example
+    /// ```rust
+    /// use a653rs_postcard::prelude::*;
+    /// # use a653rs::prelude::*;
+    /// # use std::str::FromStr;
+    /// # use std::time::Duration;
+    /// # use mock::MockHyp as Hypervisor;
+    /// # #[path = "../tests/mock.rs"]
+    /// # mod mock;
+    /// # Hypervisor::run_test(|mut ctx| {
+    /// # let src_port = ctx
+    /// #     .create_sampling_port_source(Name::from_str("").unwrap(), 500)
+    /// #     .unwrap();
+    /// # let port = ctx
+    /// #     .create_sampling_port_destination(Name::from_str("Port").unwrap(), 500, Duration::ZERO)
+    /// #     .unwrap();
+    ///
+    /// let port: SamplingPortDestination<Hypervisor> = port;
+    /// let mut buf = [0; 500];
+    /// # src_port.send_type_buf(String::default(), &mut buf).unwrap();
+    /// let (validity, received_type) = port.recv_type_buf::<String>(&mut buf).unwrap();
+    /// # })
+    /// ```
     fn recv_type_buf<'a, T>(
         &self,
         buf: &'a mut [u8],
@@ -37,6 +135,9 @@ pub trait SamplingPortDestinationExt {
 }
 
 impl<Q: ApexSamplingPortP4Ext> SamplingPortSourceExt for SamplingPortSource<Q> {
+    /// Receive a type using an a653rs [`SamplingPortDestination`]
+    ///
+    /// Requires a buffer `buf` for receiving and deserializing the data.
     #[cfg(feature = "alloc")]
     fn send_type<T>(&self, p: T) -> Result<(), SendError>
     where

@@ -1,3 +1,5 @@
+//! Error Types
+
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
@@ -10,6 +12,9 @@ use a653rs::prelude::*;
 #[derive(Debug, Clone)]
 pub enum QueuingRecvError {
     Apex(a653rs::prelude::Error),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize
     Postcard(postcard::Error, Vec<u8>),
 }
 
@@ -23,6 +28,9 @@ impl From<a653rs::prelude::Error> for QueuingRecvError {
 #[derive(Debug, Clone)]
 pub enum QueuingRecvBufError<'a> {
     Apex(a653rs::prelude::Error),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize
     Postcard(postcard::Error, &'a [u8]),
 }
 
@@ -36,6 +44,9 @@ impl From<a653rs::prelude::Error> for QueuingRecvBufError<'_> {
 #[derive(Debug, Clone)]
 pub enum SamplingRecvError {
     Apex(a653rs::prelude::Error),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize and its [`Validity`]
     Postcard(postcard::Error, Validity, Vec<u8>),
 }
 
@@ -49,6 +60,9 @@ impl From<a653rs::prelude::Error> for SamplingRecvError {
 #[derive(Debug, Clone)]
 pub enum SamplingRecvBufError<'a> {
     Apex(a653rs::prelude::Error),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize and its [`Validity`]
     Postcard(postcard::Error, Validity, &'a [u8]),
 }
 

@@ -14,6 +14,8 @@ static SYNC: Mutex<()> = Mutex::new(());
 pub struct MockHyp;
 
 impl MockHyp {
+    /// Prevents multiple tests from running concurrently
+    /// Also clears all ports before starting with the next one
     pub fn run_test(t: fn(StartContext<MockHyp>)) {
         let ctx = unsafe { MaybeUninit::zeroed().assume_init() };
         let lock = SYNC.lock();

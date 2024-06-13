@@ -94,6 +94,16 @@
                   "Verify that all feature combinations build";
                 category = "test";
               }
+              {
+                name = "verify-tests";
+                command = ''
+                  cd $PRJ_ROOT
+                  cargo test-all-features $@
+                '';
+                help =
+                  "Verify that all tests run for all feature combinations";
+                category = "test";
+              }
             ];
           });
           checks = {

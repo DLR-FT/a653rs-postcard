@@ -92,3 +92,145 @@ impl<Q: ApexQueuingPortP4Ext> QueuingPortReceiverExt for QueuingPortReceiver<Q> 
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../tests"]
+mod tests {
+    use core::str::FromStr;
+    use std::string::String;
+
+    use a653rs::bindings::QueuingDiscipline;
+    use a653rs::prelude::{Name, SystemTime};
+    use mock::MockHyp;
+
+    use crate::prelude::{QueuingPortReceiverExt, QueuingPortSenderExt};
+
+    extern crate std;
+
+    #[allow(clippy::duplicate_mod)]
+    mod mock;
+
+    #[test]
+    fn queuing_type_buf() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_queuing_port_sender(
+                    Name::from_str("").unwrap(),
+                    500,
+                    0,
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+            let dest_port = ctx
+                .create_queuing_port_receiver(
+                    Name::from_str("").unwrap(),
+                    500,
+                    0,
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+
+            let msg = String::from("Test");
+            let mut buf = [0; 500];
+
+            src_port
+                .send_type_buf(msg.clone(), SystemTime::Infinite, &mut buf)
+                .unwrap();
+            let (rec, _): (String, _) = dest_port
+                .recv_type_buf(SystemTime::Infinite, &mut buf)
+                .unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+
+    #[test]
+    fn const_queuing_type_buf() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_const_queuing_port_sender::<500, 0>(
+                    Name::from_str("").unwrap(),
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+            let dest_port = ctx
+                .create_const_queuing_port_receiver::<500, 0>(
+                    Name::from_str("").unwrap(),
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+
+            let msg = String::from("Test");
+            let mut buf = [0; 500];
+
+            src_port
+                .send_type_buf(msg.clone(), SystemTime::Infinite, &mut buf)
+                .unwrap();
+            let (rec, _): (String, _) = dest_port
+                .recv_type_buf(SystemTime::Infinite, &mut buf)
+                .unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn queuing_type() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_queuing_port_sender(
+                    Name::from_str("").unwrap(),
+                    500,
+                    0,
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+            let dest_port = ctx
+                .create_queuing_port_receiver(
+                    Name::from_str("").unwrap(),
+                    500,
+                    0,
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+
+            let msg = String::from("Test");
+
+            src_port
+                .send_type(msg.clone(), SystemTime::Infinite)
+                .unwrap();
+            let (rec, _): (String, _) = dest_port.recv_type(SystemTime::Infinite).unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn const_queuing_type() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_const_queuing_port_sender::<500, 0>(
+                    Name::from_str("").unwrap(),
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+            let dest_port = ctx
+                .create_const_queuing_port_receiver::<500, 0>(
+                    Name::from_str("").unwrap(),
+                    QueuingDiscipline::Fifo,
+                )
+                .unwrap();
+
+            let msg = String::from("Test");
+
+            src_port
+                .send_type(msg.clone(), SystemTime::Infinite)
+                .unwrap();
+            let (rec, _): (String, _) = dest_port.recv_type(SystemTime::Infinite).unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+}

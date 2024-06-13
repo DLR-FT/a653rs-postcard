@@ -12,13 +12,20 @@ default = []
 alloc = ["postcard/alloc"]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"], default-features = false }
+serde.workspace = true
 postcard = { version = "1.0", default-features = false }
+a653rs.workspace = true
 
-a653rs = "0.6"
+[dev-dependencies]
+a653rs = { workspace = true, features = ["bindings"] }
+serde = { workspace = true, features = ["alloc"] }
 
 [package.metadata.cargo-all-features]
 skip_optional_dependencies = true
 
 [package.metadata."docs.rs"]
 all-features = true
+
+[workspace.dependencies]
+a653rs = "0.6"
+serde = { version = "1.0", default-features = false}

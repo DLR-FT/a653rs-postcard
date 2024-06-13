@@ -90,3 +90,107 @@ impl<Q: ApexSamplingPortP4Ext> SamplingPortDestinationExt for SamplingPortDestin
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../tests"]
+mod tests {
+    use core::str::FromStr;
+    use core::time::Duration;
+    use std::string::String;
+
+    use a653rs::prelude::Name;
+    use mock::MockHyp;
+
+    use crate::prelude::{SamplingPortDestinationExt, SamplingPortSourceExt};
+
+    extern crate std;
+
+    #[allow(clippy::duplicate_mod)]
+    mod mock;
+
+    #[test]
+    fn sampling_type_buf() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_sampling_port_source(Name::from_str("").unwrap(), 500)
+                .unwrap();
+            let dest_port = ctx
+                .create_sampling_port_destination(Name::from_str("").unwrap(), 500, Duration::ZERO)
+                .unwrap();
+
+            let msg = String::from("Test");
+            let mut buf = [0; 500];
+
+            src_port.send_type_buf(msg.clone(), &mut buf).unwrap();
+            let (_, rec): (_, String) = dest_port.recv_type_buf(&mut buf).unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+
+    #[test]
+    fn const_sampling_type_buf() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_const_sampling_port_source::<500>(Name::from_str("").unwrap())
+                .unwrap();
+            let dest_port = ctx
+                .create_const_sampling_port_destination::<500>(
+                    Name::from_str("").unwrap(),
+                    Duration::ZERO,
+                )
+                .unwrap();
+
+            let msg = String::from("Test");
+            let mut buf = [0; 500];
+
+            src_port.send_type_buf(msg.clone(), &mut buf).unwrap();
+            let (_, rec): (_, String) = dest_port.recv_type_buf(&mut buf).unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn sampling_type() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_sampling_port_source(Name::from_str("").unwrap(), 500)
+                .unwrap();
+            let dest_port = ctx
+                .create_sampling_port_destination(Name::from_str("").unwrap(), 500, Duration::ZERO)
+                .unwrap();
+
+            let msg = String::from("Test");
+
+            src_port.send_type(msg.clone()).unwrap();
+            let (_, rec): (_, String) = dest_port.recv_type().unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn const_sampling_type() {
+        MockHyp::run_test(|mut ctx| {
+            let src_port = ctx
+                .create_const_sampling_port_source::<500>(Name::from_str("").unwrap())
+                .unwrap();
+            let dest_port = ctx
+                .create_const_sampling_port_destination::<500>(
+                    Name::from_str("").unwrap(),
+                    Duration::ZERO,
+                )
+                .unwrap();
+
+            let msg = String::from("Test");
+
+            src_port.send_type(msg.clone()).unwrap();
+            let (_, rec): (_, String) = dest_port.recv_type().unwrap();
+
+            assert_eq!(msg, rec)
+        })
+    }
+}

@@ -1,43 +1,74 @@
-use a653rs::prelude::*;
-use arrayvec::ArrayVec;
+//! Error Types
 
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+use a653rs::prelude::*;
+
+#[cfg(feature = "alloc")]
 #[derive(Debug, Clone)]
-pub enum QueuingRecvError<const MSG_SIZE: MessageSize>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+pub enum QueuingRecvError {
     Apex(a653rs::prelude::Error),
-    Postcard(postcard::Error, ArrayVec<u8, { MSG_SIZE as usize }>),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize
+    Postcard(postcard::Error, Vec<u8>),
 }
 
-impl<const MSG_SIZE: MessageSize> From<a653rs::prelude::Error> for QueuingRecvError<MSG_SIZE>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+#[cfg(feature = "alloc")]
+impl From<a653rs::prelude::Error> for QueuingRecvError {
     fn from(e: a653rs::prelude::Error) -> Self {
         QueuingRecvError::Apex(e)
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum SamplingRecvError<const MSG_SIZE: MessageSize>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+pub enum QueuingRecvBufError<'a> {
     Apex(a653rs::prelude::Error),
-    Postcard(
-        postcard::Error,
-        Validity,
-        ArrayVec<u8, { MSG_SIZE as usize }>,
-    ),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize
+    Postcard(postcard::Error, &'a [u8]),
 }
 
-impl<const MSG_SIZE: MessageSize> From<a653rs::prelude::Error> for SamplingRecvError<MSG_SIZE>
-where
-    [u8; MSG_SIZE as usize]:,
-{
+impl From<a653rs::prelude::Error> for QueuingRecvBufError<'_> {
+    fn from(e: a653rs::prelude::Error) -> Self {
+        QueuingRecvBufError::Apex(e)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[derive(Debug, Clone)]
+pub enum SamplingRecvError {
+    Apex(a653rs::prelude::Error),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize and its [`Validity`]
+    Postcard(postcard::Error, Validity, Vec<u8>),
+}
+
+#[cfg(feature = "alloc")]
+impl From<a653rs::prelude::Error> for SamplingRecvError {
     fn from(e: a653rs::prelude::Error) -> Self {
         SamplingRecvError::Apex(e)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum SamplingRecvBufError<'a> {
+    Apex(a653rs::prelude::Error),
+    /// Postcard deserialization error
+    ///
+    /// Also returns the data which failed to deserialize and its [`Validity`]
+    Postcard(postcard::Error, Validity, &'a [u8]),
+}
+
+impl From<a653rs::prelude::Error> for SamplingRecvBufError<'_> {
+    fn from(e: a653rs::prelude::Error) -> Self {
+        SamplingRecvBufError::Apex(e)
     }
 }
 

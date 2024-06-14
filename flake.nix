@@ -1,5 +1,6 @@
 {
   inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
     devshell.url = "github:numtide/devshell";
     fenix.url = "github:nix-community/fenix";
@@ -16,11 +17,11 @@
           };
           rust-toolchain = with fenix.packages.${system};
             combine [
-              latest.rustc
-              latest.cargo
-              latest.clippy
+              stable.rustc
+              stable.cargo
+              stable.clippy
               latest.rustfmt
-              targets.thumbv6m-none-eabi.latest.rust-std
+              targets.thumbv6m-none-eabi.stable.rust-std
             ];
         in
         rec {
@@ -34,6 +35,7 @@
               cargo-outdated
               cargo-audit
               cargo-udeps
+              cargo-all-features
               cargo-watch
               nixpkgs-fmt
             ];
@@ -80,6 +82,26 @@
                 '';
                 help =
                   "Verify that the documentation builds without problems";
+                category = "test";
+              }
+              {
+                name = "verify-features";
+                command = ''
+                  cd $PRJ_ROOT
+                  cargo check-all-features $@
+                '';
+                help =
+                  "Verify that all feature combinations build";
+                category = "test";
+              }
+              {
+                name = "verify-tests";
+                command = ''
+                  cd $PRJ_ROOT
+                  cargo test-all-features $@
+                '';
+                help =
+                  "Verify that all tests run for all feature combinations";
                 category = "test";
               }
             ];

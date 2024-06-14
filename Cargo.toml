@@ -4,6 +4,20 @@ version = "0.3.0"
 edition = "2021"
 authors = ["Sven Friedrich <sven.friedrich@dlr.de>"]
 license = "MIT OR Apache-2.0"
+keywords = [
+  "arinc",
+  "avionics",
+  "embedded",
+  "no_std",
+  "serialization"
+]
+description = "Extension traits for sending types via a653rs channels using postcard"
+categories = [
+  "aerospace", 
+  "embedded",
+  "no-std",
+]
+repository = "https://github.com/DLR-FT/a653rs-postcard/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
